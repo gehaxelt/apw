@@ -116,8 +116,13 @@ end
 
 
 function pulseWidget.ToggleMute()
-	p:ToggleMute()
-	_update()
+    p:ToggleMute()
+    _update()
+end
+
+function pulseWidget.ToggleMuteMic()
+    p:ToggleMuteMic()
+    _update()
 end
 
 function pulseWidget.Update()

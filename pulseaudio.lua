@@ -22,6 +22,7 @@ local pulseaudio = {}
 
 local cmd = "pacmd"
 local default_sink = ""
+local default_source = ""
 
 function pulseaudio:Create()
 	o = {}
@@ -29,7 +30,8 @@ function pulseaudio:Create()
 	self.__index = self
 
 	o.Volume = 0     -- volume of default sink
-	o.Mute = false   -- state of the mute flag of the default sink
+	o.Mute = true   -- state of the mute flag of the default sink
+	o.MuteMic = true
 
 	-- retreive current state from Pulseaudio
 	pulseaudio.UpdateState(o)
@@ -56,6 +58,14 @@ function pulseaudio:UpdateState()
 		return false
 	end
 
+	-- get the default source
+	default_source = string.match(out, "set%-default%-source ([^\n]+)")
+
+	if default_source == nil then
+		default_source = ""
+		return false
+	end
+
 	-- retreive volume of default sink
 	for sink, value in string.gmatch(out, "set%-sink%-volume ([^%s]+) (0x%x+)") do
 		if sink == default_sink then
@@ -72,6 +82,17 @@ function pulseaudio:UpdateState()
 	end
 
 	self.Mute = m == "yes"
+
+	-- retreive mute state of default sink
+	local m
+	for source, value in string.gmatch(out, "set%-source%-mute ([^%s]+) (%a+)") do
+		if source == default_source then
+			m = value
+		end
+	end
+
+	self.MuteMic = m == "yes"
+
 end
 
 -- Run process and wait for it to end
@@ -106,6 +127,18 @@ function pulseaudio:ToggleMute()
 		run(cmd .. " set-sink-mute " .. default_sink .. " 0")
 	else
 		run(cmd .. " set-sink-mute " .. default_sink .. " 1")
+	end
+
+	-- …and update values.
+	self:UpdateState()
+end
+
+-- Toggles the mute flag of the default default_source.
+function pulseaudio:ToggleMuteMic()
+	if self.MuteMic then
+		run(cmd .. " set-source-mute " .. default_source .. " 0")
+	else
+		run(cmd .. " set-source-mute " .. default_source .. " 1")
 	end
 
 	-- …and update values.
