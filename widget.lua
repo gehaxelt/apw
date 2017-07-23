@@ -32,6 +32,7 @@ local text_color    = '#fff' -- color of text
 -- End of configuration
 
 local awful = require("awful")
+local spawn_with_shell = awful.util.spawn_with_shell or awful.spawn.with_shell
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local pulseaudio = require("apw.pulseaudio")
@@ -46,37 +47,25 @@ text_color = beautiful.apw_text_colot or text_color
 
 local p = pulseaudio:Create()
 
-local pulseBar = awful.widget.progressbar()
+local pulseBar = wibox.widget.progressbar()
 
-pulseBar:set_width(width)
+pulseBar.forced_width = width
 pulseBar.step = step
-
-local function make_stack(w1, w2)
-    local ret = wibox.widget.base.make_widget()
-
-    ret.fit = function(self, ...) return w1:fit(...) end
-    ret.draw = function(self, wibox, cr, width, height)
-        w1:draw(wibox, cr, width, height)
-        w2:draw(wibox, cr, width, height)
-    end
-
-    update = function() ret:emit_signal("widget::updated") end
-    w1:connect_signal("widget::updated", update)
-    w2:connect_signal("widget::updated", update)
-
-    return ret
-end
 
 local pulseWidget
 local pulseText
 if show_text then
     pulseText = wibox.widget.textbox()
     pulseText:set_align("center")
-    pulseWidget = wibox.layout.margin(make_stack(pulseBar, pulseText),
+    pulseWidget = wibox.container.margin(wibox.widget {
+                                              pulseBar,
+                                              pulseText,
+                                              layout = wibox.layout.stack
+                                            },
                                             margin_right, margin_left,
                                             margin_top, margin_bottom)
 else
-    pulseWidget = wibox.layout.margin(pulseBar,
+    pulseWidget = wibox.container.margin(pulseBar,
                                             margin_right, margin_left,
                                             margin_top, margin_bottom)
 end
@@ -131,7 +120,7 @@ function pulseWidget.Update()
 end
 
 function pulseWidget.LaunchMixer()
-	awful.util.spawn_with_shell( mixer )
+	spawn_with_shell( mixer )
 end
 
 
@@ -143,6 +132,8 @@ pulseWidget:buttons(awful.util.table.join(
 		awful.button({ }, 5, pulseWidget.Down)
 	)
 )
+
+pulseWidget.pulse = p
 
 
 -- initialize

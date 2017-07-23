@@ -25,7 +25,7 @@ local default_sink = ""
 local default_source = ""
 
 function pulseaudio:Create()
-	o = {}
+	local o = {}
 	setmetatable(o, self)
 	self.__index = self
 
@@ -33,7 +33,7 @@ function pulseaudio:Create()
 	o.Mute = true   -- state of the mute flag of the default sink
 	o.MuteMic = true
 
-	-- retreive current state from Pulseaudio
+	-- retrieve current state from pulseaudio
 	pulseaudio.UpdateState(o)
 
 	return o
@@ -42,7 +42,7 @@ end
 function pulseaudio:UpdateState()
 	local f = io.popen(cmd .. " dump")
 
-	-- if the cmd can't be found
+	-- if the cmd cannot be found
 	if f == nil then
 		return false
 	end
@@ -50,7 +50,7 @@ function pulseaudio:UpdateState()
 	local out = f:read("*a")
 	f:close()
 
-	-- get the default sink
+	-- find default sink
 	default_sink = string.match(out, "set%-default%-sink ([^\n]+)")
 
 	if default_sink == nil then
@@ -58,7 +58,7 @@ function pulseaudio:UpdateState()
 		return false
 	end
 
-	-- get the default source
+	-- find default source
 	default_source = string.match(out, "set%-default%-source ([^\n]+)")
 
 	if default_source == nil then
@@ -66,14 +66,14 @@ function pulseaudio:UpdateState()
 		return false
 	end
 
-	-- retreive volume of default sink
+	-- retrieve volume of default sink
 	for sink, value in string.gmatch(out, "set%-sink%-volume ([^%s]+) (0x%x+)") do
 		if sink == default_sink then
 			self.Volume = tonumber(value) / 0x10000
 		end
 	end
 
-	-- retreive mute state of default sink
+	-- retrieve mute state of default sink
 	local m
 	for sink, value in string.gmatch(out, "set%-sink%-mute ([^%s]+) (%a+)") do
 		if sink == default_sink then
@@ -83,7 +83,7 @@ function pulseaudio:UpdateState()
 
 	self.Mute = m == "yes"
 
-	-- retreive mute state of default sink
+	-- retrieve mute state of default source
 	local m
 	for source, value in string.gmatch(out, "set%-source%-mute ([^%s]+) (%a+)") do
 		if source == default_source then
@@ -96,10 +96,10 @@ function pulseaudio:UpdateState()
 end
 
 -- Run process and wait for it to end
-function run(cmd)
-    p = io.popen(cmd)
-    p:read("*a")
-    p:close()
+local function run(command)
+	local p = io.popen(command)
+	p:read("*a")
+	p:close()
 end
 
 -- Sets the volume of the default sink to vol from 0 to 1.
@@ -129,7 +129,7 @@ function pulseaudio:ToggleMute()
 		run(cmd .. " set-sink-mute " .. default_sink .. " 1")
 	end
 
-	-- …and update values.
+	-- …and updates values.
 	self:UpdateState()
 end
 
@@ -141,7 +141,7 @@ function pulseaudio:ToggleMuteMic()
 		run(cmd .. " set-source-mute " .. default_source .. " 1")
 	end
 
-	-- …and update values.
+	-- …and updates values.
 	self:UpdateState()
 end
 
