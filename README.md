@@ -1,10 +1,9 @@
 Note, that…
 -----------
-…this project is not developed any longer. It still works, though. I do not use it any more, nor do I use awesome. I am willing to merge bug fixes and improvements that do not alter the appearance or behaviour. Breaking changes in this sense, I will not merge.
 
-You are welcome to fork this and I will add a link to it in the README.
-Currently known, feature adding forks:
-* [seniorivn/apw](https://github.com/seniorivn/apw)
+This is a fork from [Mokasin's APW repo](https://github.com/mokasin/apw). Functionality to mute the default microphone was added.
+
+My experiences show that it's also compatible with Awesome 4.0+. 
 
 Awesome Pulseaudio Widget
 =========================
